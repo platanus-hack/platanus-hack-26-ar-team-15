@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { requireStepUpServiceAuth } from "@/lib/step-up/service-auth";
 import { getSharedKernelRuntime } from "@/src/runtime/runtime";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +31,11 @@ const bodySchema = z.object({
 const kernelRuntime = getSharedKernelRuntime();
 
 export async function POST(req: Request) {
+  const auth = requireStepUpServiceAuth(req);
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
   let payload: z.infer<typeof bodySchema>;
   try {
     payload = bodySchema.parse(await req.json());
@@ -120,6 +126,11 @@ export async function POST(req: Request) {
 
 // GET — debug peek at a challenge's current status.
 export async function GET(req: Request) {
+  const auth = requireStepUpServiceAuth(req);
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
   const url = new URL(req.url);
   const challengeId = url.searchParams.get("challengeId");
   if (!challengeId) {

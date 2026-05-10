@@ -9,9 +9,18 @@ const DEFAULT_ORIGIN =
 
 export const RP_ORIGIN = process.env.RP_ORIGIN || DEFAULT_ORIGIN;
 
-export const SESSION_PASSWORD =
-  process.env.SESSION_PASSWORD ||
-  "consentinel_dev_session_password_change_me_min_32_chars";
+export const SESSION_PASSWORD = readSessionPassword();
+
+function readSessionPassword(): string {
+  const configured = process.env.SESSION_PASSWORD;
+  if (configured) return configured;
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("SESSION_PASSWORD must be configured in production.");
+  }
+
+  return "consentinel_dev_session_password_change_me_min_32_chars";
+}
 
 export const SESSION_COOKIE = "consentinel_session";
 
